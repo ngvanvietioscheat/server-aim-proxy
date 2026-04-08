@@ -1,0 +1,50 @@
+async function onRequest(context, request) {
+  return request;
+}
+
+function htb(hex) {
+  let bytes = "";
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+  }
+  return bytes;
+}
+
+async function onResponse(context, request, response) {
+  const baseUrl = "https://raw.githubusercontent.com/ngvanvietioscheat/-var-mobile-Library-Mobile-iCloud-dk-simonbs/refs/heads/main/functiondarg-ob53.js";
+  const url = request.url;
+
+  if (url.includes("/CheckHackBehavior") || url.includes("/GetMatchmakingBlacklist")) {
+    response.statusCode = 403;
+    response.body = "Lỗi";
+    return response;
+  }
+
+  try {
+    if (url.includes("/GetBackpack") && request.method === "POST") {
+      const rawText = await (await fetch(baseUrl + "lov2.txt")).text();
+      response.statusCode = 400;
+      response.headers["Content-Type"] = "text/html";
+      response.body = rawText.trim();
+      delete response.headers["Content-Length"];
+      return response;
+    }
+
+    let hexSource = "";
+    if (url.includes("/fileinfo")) hexSource = "indr.txt";
+    else if (url.includes("/assetindexer")) hexSource = "3dr.txt";
+    else return response;
+
+    const rawHex = await (await fetch(baseUrl + hexSource)).text();
+
+    response.body = htb(rawHex.trim().replace(/\s/g, ''));
+    response.statusCode = 200;
+    response.headers["Content-Type"] = "application/octet-stream";
+    delete response.headers["Content-Length"];
+  } catch (e) {
+    response.statusCode = 500;
+    response.body = "Lỗi";
+  }
+
+  return response;
+}
